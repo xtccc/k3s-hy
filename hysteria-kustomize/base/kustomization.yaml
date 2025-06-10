@@ -1,0 +1,5 @@
+namespace: hy
+
+resources:
+  - deployment.yaml
+  - configmap.yaml

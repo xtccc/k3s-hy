@@ -1,0 +1,13 @@
+server: "yourip:yourport"
+bandwith:
+  up: 20mbps
+  down: 100Mbps
+
+auth:  xxxxxxxxxxxxxx
+
+tls:
+  sni: yourdomain.com
+http:
+  listen: :1081
+socks5:
+  listen: :1080

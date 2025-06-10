@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hysteria-config
+  labels:
+    app: proxy-upstream
+
+data:
+  hy2.yaml: |-
+    # 默认配置文件占位
+    server: "[::1]:444"
+    tls:
+      sni: "example.com"
+    http:
+      listen: ":1081"

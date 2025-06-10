@@ -1,0 +1,10 @@
+resources:
+  - ../../base
+
+configMapGenerator:
+  - name: hysteria-config
+    files:
+      - hy2.yaml
+    behavior: replace
+
+namePrefix: config-1-2w-

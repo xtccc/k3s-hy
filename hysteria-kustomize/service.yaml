@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hysteria-service
+  namespace: hy
+spec:
+  externalTrafficPolicy: Cluster
+  type: LoadBalancer
+  externalIPs:
+    - eip
+  selector:
+    app: proxy-upstream
+  ports:
+    - name: hysteria-1081
+      port: 1081
+      targetPort: 1081
+    - name: hysteria-1080
+      port: 1080
+      targetPort: 1080

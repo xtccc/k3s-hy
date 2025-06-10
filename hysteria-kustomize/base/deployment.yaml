@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hysteria
+  labels:
+    app: proxy-upstream # 给 Deployment 对象本身 加上标签。
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: proxy-upstream # 选择哪些 Pod 属于这个 Deployment。
+  template:
+    metadata:
+      labels:
+        app: proxy-upstream # 这是 Pod 模板的标签，即：Deployment 每次创建的新 Pod，都会继承这个标签。
+    spec:
+      containers:
+      - name: hysteria
+        imagePullPolicy: IfNotPresent
+        image: hy
+        args: ["-c", "/hy2.yaml","-l","info"]
+        ports:
+        - containerPort: 1080
+        - containerPort: 1081
+        volumeMounts:
+        - name: config-volume
+          mountPath: /hy2.yaml
+          subPath: hy2.yaml
+        readinessProbe:
+          exec:
+            command:
+              - /bin/bash
+              - -c
+              - |
+                export https_proxy=http://127.0.0.1:1081
+                echo -n "$(date) " &>> /tmp/readinessProbe
+                echo "Checking Google connectivity..." &>> /tmp/readinessProbe
+                if curl -sfL --max-time 5 https://www.google.com --head > /dev/null; then
+                  echo "Hysteria proxy OK" &>> /tmp/readinessProbe
+                  exit 0
+                else
+                  echo "Proxy failed" &>> /tmp/readinessProbe
+                  exit 1
+                fi
+          initialDelaySeconds: 2
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 1
+        livenessProbe:
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          failureThreshold: 3
+          timeoutSeconds: 3
+          exec:
+            command:
+              - /bin/bash
+              - -c
+              - |
+                export https_proxy=http://127.0.0.1:1081
+                echo -n "$(date) " &>> /tmp/livenessProbe
+                echo "Checking Google connectivity..." &>> /tmp/livenessProbe
+                if curl -sfL --max-time 5 https://www.google.com --head > /dev/null; then
+                  echo "Hysteria proxy OK" &>> /tmp/livenessProbe
+                  exit 0
+                else
+                  echo "Proxy failed" &>> /tmp/livenessProbe
+                  exit 1
+                fi
+      restartPolicy: Always
+      volumes:
+      - name: config-volume
+        configMap:
+          name: hysteria-config
